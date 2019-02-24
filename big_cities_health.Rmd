@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-list.of.packages <- c("tidyverse", "ggplot2", "knitr", "rio", "colorblindr", "janitor")
+list.of.packages <- c("tidyverse", "ggplot2", "knitr", "rio", "colorblindr", "janitor", "magrittr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])] 
 if (length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
 lapply(list.of.packages, library, character.only = TRUE)
@@ -23,6 +23,9 @@ data_filt <- data_raw %>%
   clean_names() %>% 
   select(shortened_indicator_name, year, sex, race_ethnicity, value, place) %>% 
   filter(shortened_indicator_name %in% c("Adult Physical Activity Levels", "Teen Physical Activity Levels", "Adult Binge Drinking","Adult Obesity","Heart Disease Mortality Rate","Bike Score","Walkability","Median Household Income","Race/Ethnicity","Death Rate (Overall)")) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  mutate_at(c("sex", "race_ethnicity", "place"), factor) %>% 
   na.omit()
 ```
 
+ 
