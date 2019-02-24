@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-list.of.packages <- c("tidyverse", "ggplot2", "knitr", "rio", "colorblindr", "janitor", "magrittr")
+list.of.packages <- c("tidyverse", "ggplot2", "knitr", "rio", "colorblindr", "janitor", "magrittr", "ggrepel")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])] 
 if (length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
 lapply(list.of.packages, library, character.only = TRUE)
@@ -31,7 +31,7 @@ data_filt <- data_raw %>%
 
 ```{r plot health outcomes by city}
 
-# obesity
+# Obesity
 data_filt %>% 
   filter(shortened_indicator_name == "Adult Obesity",
          place != "U.S. Total") %>% 
@@ -83,3 +83,45 @@ data_filt %>%
 ```
 
 ## replace bars with dots and add se bars. figure out units for x axes. add title. 
+
+```{r Scatter plots}
+# # create summary data set
+# summary <- data_filt %>% 
+#   filter(shortened_indicator_name %in% c("Adult Obesity", "Heart Disease Mortality Rate", "Bike Score", "Adult Physical Activity Levels", "Walkability"),
+#          place != "U.S. Total") %>% 
+#   mutate(i = row_number()) %>%
+#   spread(shortened_indicator_name, value) %>% 
+#   group_by(place) %>% 
+#   mutate(avg_walkability = mean(`Walkability`, na.rm = TRUE),
+#             avg_phys_act = mean(`Adult Physical Activity Levels`, na.rm = TRUE),
+#             avg_bike_score = mean(`Bike Score`, na.rm = TRUE),
+#             avg_obesity =  mean(`Adult Obesity`, na.rm = TRUE),
+#             avg_hdmr = mean(`Heart Disease Mortality Rate`, na.rm = TRUE))
+# 
+# 
+# summary <- data_filt %>% 
+#   filter(shortened_indicator_name %in% c("Bike Score", "Walkability"),
+#          place != "U.S. Total") %>% 
+#   mutate(i = row_number()) %>%
+#   spread(shortened_indicator_name, value) %>% 
+#   group_by(place) %>% 
+#   mutate(avg_walkability = mean(`Walkability`, na.rm = TRUE),
+#             avg_bike_score = mean(`Bike Score`, na.rm = TRUE))
+
+
+# plot obesity by heart disease mortality rate 
+data_filt %>% 
+  filter(shortened_indicator_name %in% c("Heart Disease Mortality Rate", "Adult Obesity"),
+         place != "U.S. Total") %>% 
+  mutate(i = row_number()) %>%
+  spread(shortened_indicator_name, value) %>% 
+  group_by(place) %>% 
+  summarise(avg_hdmr = mean(`Heart Disease Mortality Rate`, na.rm = TRUE),
+            avg_obesity = mean(`Adult Obesity`, na.rm = TRUE)) %>% 
+  ggplot(aes(avg_obesity, avg_hdmr)) + 
+  geom_point() +
+  geom_text_repel(aes(label = place)) + 
+  geom_smooth(method = "lm")
+```
+
+
