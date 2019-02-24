@@ -1,0 +1,21 @@
+---
+title: "Final Project"
+author: "Brendan Cullen"
+date: "2/23/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+list.of.packages <- c("tidyverse", "ggplot2", "knitr", "rio", "colorblindr", "janitor")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])] 
+if (length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
+lapply(list.of.packages, library, character.only = TRUE)
+```
+
+
+```{r import data}
+data_raw <- import("http://bchi.bigcitieshealth.org/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBGdz09IiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--c6b5c30fbd8b79859797e1dc260a06064c8f3864/Current%20BCHI%20Platform%20Dataset%20(7-18)%20-%20Updated%20BCHI%20Platform%20Dataset%20-%20BCHI,%20Phase%20I%20&%20II.csv?disposition=attachment")
+```
+
