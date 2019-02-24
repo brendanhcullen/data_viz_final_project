@@ -30,7 +30,6 @@ data_filt <- data_raw %>%
 
 
 ```{r plot health outcomes by city}
-
 # Obesity
 data_filt %>% 
   filter(shortened_indicator_name == "Adult Obesity",
@@ -85,29 +84,15 @@ data_filt %>%
 ## replace bars with dots and add se bars. figure out units for x axes. add title. 
 
 ```{r Scatter plots}
-# # create summary data set
-# summary <- data_filt %>% 
-#   filter(shortened_indicator_name %in% c("Adult Obesity", "Heart Disease Mortality Rate", "Bike Score", "Adult Physical Activity Levels", "Walkability"),
-#          place != "U.S. Total") %>% 
-#   mutate(i = row_number()) %>%
-#   spread(shortened_indicator_name, value) %>% 
-#   group_by(place) %>% 
-#   mutate(avg_walkability = mean(`Walkability`, na.rm = TRUE),
-#             avg_phys_act = mean(`Adult Physical Activity Levels`, na.rm = TRUE),
-#             avg_bike_score = mean(`Bike Score`, na.rm = TRUE),
-#             avg_obesity =  mean(`Adult Obesity`, na.rm = TRUE),
-#             avg_hdmr = mean(`Heart Disease Mortality Rate`, na.rm = TRUE))
-# 
-# 
-# summary <- data_filt %>% 
-#   filter(shortened_indicator_name %in% c("Bike Score", "Walkability"),
-#          place != "U.S. Total") %>% 
-#   mutate(i = row_number()) %>%
-#   spread(shortened_indicator_name, value) %>% 
-#   group_by(place) %>% 
-#   mutate(avg_walkability = mean(`Walkability`, na.rm = TRUE),
-#             avg_bike_score = mean(`Bike Score`, na.rm = TRUE))
-
+# create summary data set
+summary <- data_filt %>%
+  filter(shortened_indicator_name %in% c("Adult Obesity", "Heart Disease Mortality Rate"),
+         place != "U.S. Total") %>%
+  mutate(i = row_number()) %>%
+  spread(shortened_indicator_name, value) %>%
+  group_by(place) %>%
+  mutate(avg_obesity =  mean(`Adult Obesity`, na.rm = TRUE),
+         avg_hdmr = mean(`Heart Disease Mortality Rate`, na.rm = TRUE))
 
 # plot obesity by heart disease mortality rate 
 data_filt %>% 
@@ -124,4 +109,10 @@ data_filt %>%
   geom_smooth(method = "lm")
 ```
 
+## Note: data missing for Cleveland, OH and Charlotte, NC. 
+## ideas: label and use color to highlight top 3 most/least obese cities
+
+```{r Demographic variables}
+
+```
 
