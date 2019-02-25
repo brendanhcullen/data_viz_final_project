@@ -39,7 +39,8 @@ data_filt %>%
   summarise(avg_obesity = mean(`Adult Obesity`, na.rm = TRUE)) %>% 
   ggplot(aes(fct_reorder(place, avg_obesity), avg_obesity)) + 
   geom_col() + 
-  coord_flip()
+  coord_flip() + 
+  labs(title = "Percent of Adults Who Are Obese", y = "Percent", x = NULL)
 
 # Heart Disease Mortality Rate
 data_filt %>% 
@@ -114,5 +115,17 @@ data_filt %>%
 
 ```{r Demographic variables}
 
+```
+
+
+```{r Trends over time}
+data_filt %>% 
+  filter(shortened_indicator_name == "Adult Obesity",
+         place == "U.S. Total") %>% 
+  spread(shortened_indicator_name, value) %>% 
+  group_by(year) %>% 
+  summarize(avg_obesity = mean(`Adult Obesity`, na.rm = TRUE)) %>% 
+  ggplot(aes(year, avg_obesity)) + 
+  geom_line() 
 ```
 
