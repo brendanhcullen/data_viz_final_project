@@ -190,3 +190,25 @@ data_filt %>%
 
 ```
 
+
+```{r plot opiod death data over time}
+data_opiod <- data_raw %>% 
+  clean_names() %>% 
+  select(shortened_indicator_name, year, sex, race_ethnicity, value, place) %>% 
+  filter(shortened_indicator_name %in% c("Total Population", "Opioid-Related Overdose Mortality Rate")) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  mutate_at(c("sex", "race_ethnicity", "place"), factor) %>% 
+  na.omit()
+
+data_opiod %>% 
+  arrange(desc(`Total Population`)) %>% 
+  slice(1:10) %>% 
+  filter(sex == "Both", 
+         race_ethnicity == "All") %>% 
+ mutate(i = row_number()) %>% # add a unique index column to prevent spread from   trying to collapse duplicate rows
+  spread(shortened_indicator_name, value) %>% 
+  select(-i) %>% 
+  ggplot(aes(year, `Opioid-Related Overdose Mortality Rate`, color= place)) + 
+  geom_line()
+```
+
