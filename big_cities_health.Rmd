@@ -32,27 +32,55 @@ data_filt <- data_raw %>%
 
 ```{r Plot Obesity rates by city}
 
-# Obesity
-data_filt %>% 
+# wrangle data
+data_obesity <- data_filt %>% 
   filter(shortened_indicator_name == "Adult Obesity") %>% 
   spread(shortened_indicator_name, value) %>% 
   group_by(place) %>% 
-  summarise(avg_obesity = mean(`Adult Obesity`, na.rm = TRUE)) %>% 
+  summarise(avg_obesity = mean(`Adult Obesity`, na.rm = TRUE))
+
+# v1
+data_obesity %>% 
+  ggplot(aes(fct_reorder(place, avg_obesity), avg_obesity)) + 
+  geom_col() +
+  coord_flip()
+
+# v2
+data_obesity %>% 
   ggplot(aes(fct_reorder(place, avg_obesity), avg_obesity)) + 
   geom_col() + 
-  coord_flip() + 
-  labs(title = "Percent of Adults Who Are Obese", y = "Percent", x = NULL)
+  coord_flip() +
+  #scale_y_continuous(labels = scales::percent) + 
+  labs(title = "Percent of Adults Who Are Obese", y = "Percent", x = NULL) + 
+  theme_minimal()
+
+# v3
+data_obesity %>% 
+  mutate(compare_us_tot = ifelse(
+    avg_obesity > .$avg_obesity[which(data_obesity$place == "U.S. Total")], "above",
+    ifelse(avg_obesity < .$avg_obesity[which(data_obesity$place == "U.S. Total")], "below", "avg"))) %>% 
+  ggplot(aes(fct_reorder(place, avg_obesity), avg_obesity)) + 
+  geom_col(aes(fill = compare_us_tot)) +
+  coord_flip() +
+  #scale_y_continuous(labels = scales::percent) + 
+  scale_fill_manual(values = c("#BA4A00", "#7B7D7D", "#27AE60")) +
+  labs(title = "Percent of Adults Who Are Obese", y = "Percent", x = NULL) + 
+  theme_minimal() + 
+  geom_hline(yintercept = data_obesity$avg_obesity[which(data_obesity$place == "U.S. Total")], linetype = 2)
+
 ```
 
 ## replace bars with dots and add se bars. figure out units for x axes. add title. add U.S. total and put dashed vertical line. color everything to the right of the vertical line red and everything below it green or gray. color the U.S. Total bar black. 
 
 
 # Plot 2
-
+ 
 ```{r Plot relationship between obesity and heart disease mortality rate}
 # create summary data set
 summary <- data_filt %>%
   filter(shortened_indicator_name %in% c("Adult Obesity", "Heart Disease Mortality Rate"),
+         sex == "Both",
+         race_ethnicity == "All",
          place != "U.S. Total") %>%
   mutate(i = row_number()) %>%
   spread(shortened_indicator_name, value) %>%
