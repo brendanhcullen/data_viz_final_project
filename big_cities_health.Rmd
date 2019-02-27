@@ -116,6 +116,63 @@ data_filt %>%
 
 # Plot 3
 
+
+```{r plot opiod death data over time}
+data_opiod <- data_raw %>% 
+  clean_names() %>% 
+  select(shortened_indicator_name, year, sex, race_ethnicity, value, place) %>% 
+  filter(shortened_indicator_name %in% c("Opioid-Related Overdose Mortality Rate")) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  mutate_at(c("sex", "race_ethnicity", "place"), factor) %>% 
+  na.omit()
+
+# identify city with highest opiod-related overdose mortality rate from 2010 to 2016
+top_opioid = data_opiod %>% 
+  filter(sex == "Both",
+         race_ethnicity == "All",
+         place != "U.S. Total",
+         year %in% 2010:2016) %>% 
+  unique() %>% 
+  spread(shortened_indicator_name, value) %>% 
+  group_by(place) %>% 
+  summarize(mean_opiod = mean(`Opioid-Related Overdose Mortality Rate`, na.rm = TRUE)) %>% 
+  arrange(desc(mean_opiod)) %>% 
+  slice(1) %>% 
+  select(place)
+
+# v1 
+data_opiod %>% 
+  filter(sex != "Both", 
+         race_ethnicity == "All",
+         place == top_opioid$place,
+         year %in% 2010:2016) %>% 
+  spread(shortened_indicator_name, value) %>% 
+  ggplot(aes(year, `Opioid-Related Overdose Mortality Rate`, color= sex)) + 
+  geom_line()
+
+# v2 
+```
+
+# Note: Rates are age-adjusted per 100,000 people. Data includes all races. 
+
+# Random exploratory plots 
+
+```{r Trends over time}
+data_filt %>% 
+  filter(shortened_indicator_name == "Adult Obesity",
+         place != "U.S. Total",
+         year %in% (2010:2014)) %>% 
+  spread(shortened_indicator_name, value) %>% 
+  #spread(place, `Adult Obesity`) %>% 
+  #filter(length(unique(.$year)) == 5) %>% 
+  group_by(year, place) %>% 
+  summarize(avg_obesity = mean(`Adult Obesity`, na.rm = TRUE)) %>% 
+  ggplot(aes(year, avg_obesity)) + 
+  geom_line() +
+  facet_wrap(~place, nrow = 5)
+```
+
+
 ```{r Demographic variables}
 
 data_filt %>% 
@@ -170,45 +227,20 @@ ggplot(aes(`Adult Physical Activity Levels`, sex)) +
   geom_density_ridges(color = "white",
                                 alpha = 0.4,
                                 fill = "#003F9C")
-```
 
-
-```{r Trends over time}
-data_filt %>% 
-  filter(shortened_indicator_name == "Adult Obesity",
-         place != "U.S. Total",
-         year %in% (2010:2014)) %>% 
-  spread(shortened_indicator_name, value) %>% 
-  #spread(place, `Adult Obesity`) %>% 
-  #filter(length(unique(.$year)) == 5) %>% 
-  group_by(year, place) %>% 
-  summarize(avg_obesity = mean(`Adult Obesity`, na.rm = TRUE)) %>% 
-  ggplot(aes(year, avg_obesity)) + 
-  geom_line() +
-  facet_wrap(~place, nrow = 5)
-
-
-```
-
-
-```{r plot opiod death data over time}
-data_opiod <- data_raw %>% 
-  clean_names() %>% 
-  select(shortened_indicator_name, year, sex, race_ethnicity, value, place) %>% 
-  filter(shortened_indicator_name %in% c("Total Population", "Opioid-Related Overdose Mortality Rate")) %>% 
-  mutate(value = as.numeric(value)) %>% 
-  mutate_at(c("sex", "race_ethnicity", "place"), factor) %>% 
-  na.omit()
 
 data_opiod %>% 
-  arrange(desc(`Total Population`)) %>% 
-  slice(1:10) %>% 
-  filter(sex == "Both", 
-         race_ethnicity == "All") %>% 
- mutate(i = row_number()) %>% # add a unique index column to prevent spread from   trying to collapse duplicate rows
+  filter(shortened_indicator_name == "Opioid-Related Overdose Mortality Rate",
+         place == "U.S. Total",
+         sex != "Both") %>% 
+  mutate(i = row_number()) %>% # add a unique index column to prevent spread from   trying to collapse duplicate rows
   spread(shortened_indicator_name, value) %>% 
   select(-i) %>% 
-  ggplot(aes(year, `Opioid-Related Overdose Mortality Rate`, color= place)) + 
-  geom_line()
+ggplot(aes(`Opioid-Related Overdose Mortality Rate`, sex)) +
+  geom_density_ridges(color = "white",
+                                alpha = 0.4,
+                                fill = "#003F9C")
+
 ```
+
 
