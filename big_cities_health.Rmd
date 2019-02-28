@@ -64,10 +64,26 @@ data_obesity %>%
   coord_flip() +
   #scale_y_continuous(labels = scales::percent) + 
   scale_fill_manual(values = c("#BA4A00", "#7B7D7D", "#27AE60")) +
-  labs(title = "Percent of Adults Who Are Obese", y = "Percent", x = NULL) + 
+  labs(title = "Percent of Adults Who Are Obese", y = "Percent", x = NULL, caption = "States above the U.S. average are colored red. States below the U.S. average are colored green.") + 
   theme_minimal() + 
-  geom_hline(yintercept = data_obesity$avg_obesity[which(data_obesity$place == "U.S. Total")], linetype = 2)
+  geom_hline(yintercept = data_obesity$avg_obesity[which(data_obesity$place == "U.S. Total")], linetype = 2) + 
+  theme(legend.position = "none")
 
+# v4
+data_obesity %>% 
+  mutate(compare_us_tot = ifelse(
+    avg_obesity > .$avg_obesity[which(data_obesity$place == "U.S. Total")], "above",
+    ifelse(avg_obesity < .$avg_obesity[which(data_obesity$place == "U.S. Total")], "below", "avg"))) %>% 
+  ggplot(aes(fct_reorder(place, avg_obesity), avg_obesity)) + 
+  geom_segment(aes(color = compare_us_tot, x = fct_reorder(place, avg_obesity), xend = place, y=0, yend = avg_obesity), size = 1) +
+  geom_point(aes(color = compare_us_tot), size = 3) +
+  coord_flip() +
+  #scale_y_continuous(labels = scales::percent) + 
+  scale_color_manual(values = c("#BA4A00", "#7B7D7D", "#27AE60")) +
+  labs(title = "Percent of Adults Who Are Obese", y = "Percent", x = NULL, caption = "States above the U.S. average are colored red. States below the U.S. average are colored green.") + 
+  theme_minimal() + 
+  geom_hline(yintercept = data_obesity$avg_obesity[which(data_obesity$place == "U.S. Total")], linetype = 2) + 
+  theme(legend.position = "none")
 ```
 
 ## replace bars with dots and add se bars. figure out units for x axes. add title. add U.S. total and put dashed vertical line. color everything to the right of the vertical line red and everything below it green or gray. color the U.S. Total bar black. 
@@ -76,8 +92,8 @@ data_obesity %>%
 # Plot 2
  
 ```{r Plot relationship between obesity and heart disease mortality rate}
-# create summary data set
-summary <- data_filt %>%
+# wrangle data
+obesity_hdmr <- data_filt %>%
   filter(shortened_indicator_name %in% c("Adult Obesity", "Heart Disease Mortality Rate"),
          sex == "Both",
          race_ethnicity == "All",
@@ -85,25 +101,46 @@ summary <- data_filt %>%
   mutate(i = row_number()) %>%
   spread(shortened_indicator_name, value) %>%
   group_by(place) %>%
-  mutate(avg_obesity =  mean(`Adult Obesity`, na.rm = TRUE),
-         avg_hdmr = mean(`Heart Disease Mortality Rate`, na.rm = TRUE))
+  summarize(avg_obesity =  mean(`Adult Obesity`, na.rm = TRUE),
+            avg_hdmr = mean(`Heart Disease Mortality Rate`, na.rm = TRUE))
 
-# plot obesity by heart disease mortality rate 
-data_filt %>% 
-  filter(shortened_indicator_name %in% c("Heart Disease Mortality Rate", "Adult Obesity"),
-         place != "U.S. Total") %>% 
-  mutate(i = row_number()) %>%
-  spread(shortened_indicator_name, value) %>% 
-  group_by(place) %>% 
-  summarise(avg_hdmr = mean(`Heart Disease Mortality Rate`, na.rm = TRUE),
-            avg_obesity = mean(`Adult Obesity`, na.rm = TRUE)) %>% 
+# v1
+obesity_hdmr %>% 
   ggplot(aes(avg_obesity, avg_hdmr)) + 
   geom_point() +
-  geom_text_repel(aes(label = place)) + 
   geom_smooth(method = "lm")
+
+# v2
+obesity_hdmr %>% 
+  ggplot(aes(avg_obesity, avg_hdmr)) + 
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_text_repel(aes(label = place)) + 
+  theme_minimal()
+
+# v3
+
+## 5 most obese cities
+top_3_obese <- obesity_hdmr %>% 
+  top_n(3, avg_obesity)
+
+## 5 least obese cities
+bottom_3_obese <- obesity_hdmr %>% 
+  top_n(-3, avg_obesity)
+
+obesity_hdmr %>% 
+  ggplot(aes(avg_obesity, avg_hdmr)) + 
+  geom_point(size = 3, alpha = 0.5, color = "gray40") +
+  geom_point(data = top_3_obese, color = "red", fill = "red") +
+  geom_point(data = bottom_3_obese, color = "green", fill = "green") +
+  geom_smooth(method = "lm", alpha = 0.2) +
+  geom_text_repel(data = top_3_obese, aes(label = place)) +
+  geom_text_repel(data = bottom_3_obese, aes(label = place)) +
+  theme_minimal() + 
+  labs(x = "Adult Obesity Rate", y = "Heart Disease Mortality Rate", title = "Relationship between Obesity and Heart Disease", caption = "3 most obese states are colored red. 3 lease obese states are colored green.")
 ```
 
-## Note: data missing for Cleveland, OH and Charlotte, NC. 
+## Note: data missing for Cleveland, OH and Charlotte, NC. Heart Disease Mortality Rate Age-Adjusted; Per 100,000 people. Adult Obesity Rate = Percent of Adults Who Are Obese.
 ## ideas: label and use color to highlight top 3 most/least obese cities
 
 # Plot 3
@@ -128,8 +165,7 @@ top_opioid = data_opiod %>%
   spread(shortened_indicator_name, value) %>% 
   group_by(place) %>% 
   summarize(mean_opiod = mean(`Opioid-Related Overdose Mortality Rate`, na.rm = TRUE)) %>% 
-  arrange(desc(mean_opiod)) %>% 
-  slice(1) %>% 
+  top_n(1) %>% 
   select(place)
 
 # v1 
@@ -140,7 +176,20 @@ data_opiod %>%
          year %in% 2010:2016) %>% 
   spread(shortened_indicator_name, value) %>% 
   ggplot(aes(year, `Opioid-Related Overdose Mortality Rate`, color= sex)) + 
-  geom_line()
+  geom_line() 
+
+# v2
+data_opiod %>% 
+  filter(sex != "Both", 
+         race_ethnicity == "All",
+         place == top_opioid$place,
+         year %in% 2010:2016) %>% 
+  spread(shortened_indicator_name, value) %>% 
+  ggplot(aes(year, `Opioid-Related Overdose Mortality Rate`, color= sex)) + 
+  geom_line() + 
+  geom_point() + 
+  labs(x = NULL, y = "Opioid-Related Overdose Mortality Rate") + 
+  theme_minimal()
 ```
 
 # Note: Rates are age-adjusted per 100,000 people. Data includes all races. 
