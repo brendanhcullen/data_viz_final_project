@@ -8,10 +8,12 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-list.of.packages <- c("tidyverse", "ggplot2", "knitr", "rio", "colorblindr", "janitor", "magrittr", "ggrepel", "ggridges")
-new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])] 
-if (length(new.packages)) install.packages(new.packages, repos = "http://cran.us.r-project.org")
-lapply(list.of.packages, library, character.only = TRUE)
+library(tidyverse)
+library(rio)
+library(colorblindr)
+library(janitor)
+library(magrittr)
+library(ggrepel)
 ```
 
 
