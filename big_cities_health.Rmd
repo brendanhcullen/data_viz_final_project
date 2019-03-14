@@ -145,24 +145,24 @@ obesity_hdmr %>%
 
 # v3
 
-## 5 most obese cities
+## 3 most obese cities
 top_3_obese <- obesity_hdmr %>% 
   top_n(3, avg_obesity)
 
-## 5 least obese cities
+## 3 least obese cities
 bottom_3_obese <- obesity_hdmr %>% 
   top_n(-3, avg_obesity)
 
 obesity_hdmr %>% 
   ggplot(aes(avg_obesity, avg_hdmr)) + 
-  geom_point(size = 3) +
-  geom_point(data = top_3_obese, size = 3) +
-  geom_point(data = bottom_3_obese, size = 3) +
+  geom_point(size = 5, alpha = 0.7, color = "gray70") +
+  geom_point(data = top_3_obese, size = 5, color = "#ABCFF7") +
+  geom_point(data = bottom_3_obese, size = 5, color = "#BA4A00") +
   geom_smooth(method = "lm", alpha = 0.2) +
-  geom_text_repel(data = top_3_obese, aes(label = place)) +
-  geom_text_repel(data = bottom_3_obese, aes(label = place)) +
+  geom_text_repel(data = top_3_obese, aes(label = place), min.segment.length = 0) +
+  geom_text_repel(data = bottom_3_obese, aes(label = place), min.segment.length = 0) +
   theme_minimal() + 
-  labs(x = "Percent Obese", y = "Heart Disease Mortality Rate", title = "Relationship between Obesity and Heart Disease", subtitle = "State labels represent 3 most/least obese states", caption = "3 most obese states are colored red. \n Heart Disease Mortality Rate is age-adjusted per 100,000 people.")
+  labs(x = "Percent Obese", y = "Heart Disease Mortality Rate", title = "Relationship between Obesity and Heart Disease", subtitle = "State labels represent 3 most/least obese states", caption = "3 most/least obese states are colored red/green, respectively. \n Heart Disease Mortality Rate is age-adjusted per 100,000 people.")
 ```
 
 ## Note: data missing for Cleveland, OH and Charlotte, NC. Heart Disease Mortality Rate Age-Adjusted; Per 100,000 people. Adult Obesity Rate = Percent of Adults Who Are Obese.
