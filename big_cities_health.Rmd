@@ -213,9 +213,33 @@ data_opioid %>%
   spread(shortened_indicator_name, value) %>% 
   ggplot(aes(year, `Opioid-Related Overdose Mortality Rate`, color= sex)) + 
   geom_line(size= 2) +
-  geom_point(size = 3) + 
+  geom_point(size = 4) + 
   labs(x = NULL, y = "Opioid-Related Overdose Mortality Rate", title = "Opioid-use Related Mortality Rates Over Time", subtitle = "Colombus, OH", caption = "Rates are age-adjusted per 100,000 people.") + 
   theme_minimal() 
+
+# v3
+data_opioid %>% 
+  filter(sex != "Both", 
+         race_ethnicity == "All",
+         place == top_opioid$place,
+         year %in% 2010:2016) %>% 
+  spread(shortened_indicator_name, value) %>% 
+  ggplot(aes(year, `Opioid-Related Overdose Mortality Rate`, color= sex)) + 
+  geom_line(size= 2) +
+  geom_point(size = 4) + 
+  labs(x = NULL, y = "Opioid-Related Overdose Mortality Rate", title = "Opioid-use Related Mortality Rates Over Time", subtitle = "Colombus, OH", caption = "Rates are age-adjusted per 100,000 people.") + 
+  theme_minimal() + 
+  scale_color_OkabeIto() +
+  theme(legend.position = "none") +
+  geom_label(data = data_opioid %>% 
+  filter(sex != "Both", 
+         race_ethnicity == "All",
+         place == top_opioid$place,
+         year == 2016) %>% 
+         spread(shortened_indicator_name, value), 
+         aes(y =`Opioid-Related Overdose Mortality Rate`, label = sex),
+         nudge_x = -0.6,
+         size = 5) 
 ```
 
 # Note: Rates are age-adjusted per 100,000 people. Data includes all races. 
